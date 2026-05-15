@@ -71,7 +71,7 @@ const PROVIDERS = [
     id: 'openai-codex',
     name: 'OpenAI Codex',
     logo: '/providers/openai.png',
-    desc: 'Free via ChatGPT Pro',
+    desc: 'Hermes Codex OAuth',
     authType: 'oauth',
   },
   {
@@ -140,13 +140,15 @@ export function ClaudeOnboarding() {
     null,
   )
   const [backendMessage, setBackendMessage] = useState('')
-  const [selectedProvider, setSelectedProvider] = useState<string | null>(null)
+  const [selectedProvider, setSelectedProvider] = useState<string | null>(
+    'openai-codex',
+  )
   const [apiKey, setApiKey] = useState('')
   const [baseUrl, setBaseUrl] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [availableModels, setAvailableModels] = useState<Array<string>>([])
-  const [selectedModel, setSelectedModel] = useState('')
+  const [selectedModel, setSelectedModel] = useState('gpt-5.5')
   const [testStatus, setTestStatus] = useState<
     'idle' | 'testing' | 'success' | 'error'
   >('idle')
@@ -811,11 +813,12 @@ export function ClaudeOnboarding() {
                       className="rounded-lg px-3 py-2 font-mono text-xs"
                       style={{ background: 'rgba(0,0,0,0.2)' }}
                     >
-                      claude auth login openai-codex
+                      hermes auth add openai-codex
                     </div>
                     <p className="text-xs" style={mutedStyle}>
-                      After the login flow completes, click below to refresh
-                      provider settings.
+                      Complete the Hermes Codex browser sign-in. Hermes Agent
+                      stores its runtime token in{' '}
+                      <code className="font-mono">~/.hermes/auth.json</code>.
                     </p>
                     <button
                       onClick={async () => {

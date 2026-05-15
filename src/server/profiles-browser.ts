@@ -343,14 +343,14 @@ export function createProfile(
     } else {
       fs.writeFileSync(
         configPath,
-        YAML.stringify({ model: '', provider: '' }),
+        YAML.stringify({ model: 'gpt-5.5', provider: 'openai-codex' }),
         'utf-8',
       )
     }
   } else {
     fs.writeFileSync(
       configPath,
-      YAML.stringify({ model: '', provider: '' }),
+      YAML.stringify({ model: 'gpt-5.5', provider: 'openai-codex' }),
       'utf-8',
     )
   }

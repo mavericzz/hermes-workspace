@@ -192,7 +192,7 @@ const PROVIDER_CARDS: Array<{
     id: 'openai-codex',
     name: 'OpenAI Codex',
     logo: '/providers/openai.png',
-    models: ['gpt-5.4', 'gpt-5.3-codex', 'gpt-4o'],
+    models: ['gpt-5.5', 'gpt-5.4', 'gpt-5.3-codex'],
     authType: 'oauth',
   },
   {

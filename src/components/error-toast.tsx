@@ -27,6 +27,9 @@ function classifyError(raw: string): string {
     lower.includes('invalid api key') ||
     lower.includes('api key')
   ) {
+    if (lower.includes('codex') || lower.includes('openai-codex')) {
+      return 'Codex auth error — run `hermes auth add openai-codex`, then restart Hermes'
+    }
     return 'Authentication error — check your API key in Settings'
   }
   if (

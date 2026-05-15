@@ -115,6 +115,7 @@ const STATE_GLOW: Record<string, string> = {
 
 const USAGE_POLL_MS = 30_000
 const PREFERRED_PROVIDER_KEY_OC = 'hermes-workspace-preferred-provider'
+const DEFAULT_USAGE_PROVIDER = 'codex'
 
 type OcUsageLine = {
   type: 'progress' | 'text' | 'badge'
@@ -222,8 +223,17 @@ function OrchestratorCard({
   const [providerLabel, setProviderLabel] = useState<string | null>(null)
   const [usageExpanded, setUsageExpanded] = useState(true)
   const [preferredProvider, setPreferredProvider] = useState<string | null>(() => {
-    if (typeof window === 'undefined') return null
-    try { return window.localStorage.getItem(PREFERRED_PROVIDER_KEY_OC) } catch { return null }
+    if (typeof window === 'undefined') return DEFAULT_USAGE_PROVIDER
+    try {
+      const stored = window.localStorage.getItem(PREFERRED_PROVIDER_KEY_OC)
+      if (!stored || stored === 'claude' || stored === 'anthropic') {
+        window.localStorage.setItem(PREFERRED_PROVIDER_KEY_OC, DEFAULT_USAGE_PROVIDER)
+        return DEFAULT_USAGE_PROVIDER
+      }
+      return stored
+    } catch {
+      return DEFAULT_USAGE_PROVIDER
+    }
   })
   const [allOcProviders, setAllOcProviders] = useState<OcProviderEntry[]>([])
   const [providerFlash, setProviderFlash] = useState(false)
@@ -234,6 +244,12 @@ function OrchestratorCard({
       const m = all.find((p) => p.provider === preferred && p.status === 'ok' && p.lines.length > 0)
       if (m) return m
     }
+    const codex = all.find((p) =>
+      (p.provider === 'codex' || p.provider === 'openai-codex') &&
+      p.status === 'ok' &&
+      p.lines.length > 0,
+    )
+    if (codex) return codex
     return all.find((p) => p.status === 'ok' && p.lines.length > 0) ?? null
   }
 
@@ -332,6 +348,7 @@ function OrchestratorCard({
   const PROVIDER_LOGO_URLS: Record<string, string> = {
     'anthropic': 'https://cdn.simpleicons.org/anthropic',
     'claude':    'https://cdn.simpleicons.org/anthropic',
+    'codex':     'https://cdn.simpleicons.org/openai',
     'openai':    'https://cdn.simpleicons.org/openai',
     'gemini':    'https://cdn.simpleicons.org/googlegemini',
     'google':    'https://cdn.simpleicons.org/google',

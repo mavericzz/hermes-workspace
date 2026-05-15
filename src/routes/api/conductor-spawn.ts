@@ -18,6 +18,8 @@ type ConductorSpawnBody = {
   supervised?: unknown
 }
 
+const DEFAULT_CODEX_MODEL = 'openai-codex/gpt-5.5'
+
 function repoRoot(): string {
   try {
     const here = dirname(fileURLToPath(import.meta.url))
@@ -160,8 +162,10 @@ export const Route = createFileRoute('/api/conductor-spawn')({
         try {
           const body = (await request.json().catch(() => ({}))) as ConductorSpawnBody
           const goal = readOptionalString(body.goal)
-          const orchestratorModel = readOptionalString(body.orchestratorModel)
-          const workerModel = readOptionalString(body.workerModel)
+          const orchestratorModel =
+            readOptionalString(body.orchestratorModel) || DEFAULT_CODEX_MODEL
+          const workerModel =
+            readOptionalString(body.workerModel) || DEFAULT_CODEX_MODEL
           const projectsDir = readOptionalString(body.projectsDir)
           const maxParallel = readMaxParallel(body.maxParallel)
           const supervised = body.supervised === true

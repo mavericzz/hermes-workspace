@@ -48,8 +48,8 @@ export type ConductorSettings = {
 const ACTIVE_MISSION_STORAGE_KEY = 'conductor:active-mission'
 const CONDUCTOR_SETTINGS_STORAGE_KEY = 'conductor-settings'
 const DEFAULT_CONDUCTOR_SETTINGS: ConductorSettings = {
-  orchestratorModel: '',
-  workerModel: '',
+  orchestratorModel: 'openai-codex/gpt-5.5',
+  workerModel: 'openai-codex/gpt-5.5',
   projectsDir: '',
   maxParallel: 1,
   supervised: false,
@@ -349,8 +349,8 @@ function loadConductorSettings(): ConductorSettings {
     if (!raw) return DEFAULT_CONDUCTOR_SETTINGS
     const parsed = JSON.parse(raw) as Record<string, unknown>
     return {
-      orchestratorModel: typeof parsed.orchestratorModel === 'string' ? parsed.orchestratorModel : DEFAULT_CONDUCTOR_SETTINGS.orchestratorModel,
-      workerModel: typeof parsed.workerModel === 'string' ? parsed.workerModel : DEFAULT_CONDUCTOR_SETTINGS.workerModel,
+      orchestratorModel: typeof parsed.orchestratorModel === 'string' && parsed.orchestratorModel.trim() ? parsed.orchestratorModel : DEFAULT_CONDUCTOR_SETTINGS.orchestratorModel,
+      workerModel: typeof parsed.workerModel === 'string' && parsed.workerModel.trim() ? parsed.workerModel : DEFAULT_CONDUCTOR_SETTINGS.workerModel,
       projectsDir: typeof parsed.projectsDir === 'string' ? parsed.projectsDir : DEFAULT_CONDUCTOR_SETTINGS.projectsDir,
       maxParallel: Math.min(5, Math.max(1, typeof parsed.maxParallel === 'number' && Number.isFinite(parsed.maxParallel) ? Math.round(parsed.maxParallel) : DEFAULT_CONDUCTOR_SETTINGS.maxParallel)),
       supervised: typeof parsed.supervised === 'boolean' ? parsed.supervised : DEFAULT_CONDUCTOR_SETTINGS.supervised,

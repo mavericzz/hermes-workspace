@@ -97,6 +97,9 @@ type ConfigPayload = {
 
 const META_STORAGE_PREFIX = 'operations:agents:'
 const SETTINGS_STORAGE_KEY = 'operations-settings'
+const DEFAULT_AGENT_MODEL = 'gpt-5.5'
+const DEFAULT_AGENT_PROVIDER = 'openai-codex'
+const DEFAULT_AGENT_MODEL_ID = `${DEFAULT_AGENT_PROVIDER}/${DEFAULT_AGENT_MODEL}`
 
 const COLOR_PALETTE = [
   { body: '#3b82f6', accent: '#93c5fd' },
@@ -240,7 +243,8 @@ async function fetchOperationsConfig(): Promise<ConfigPayload> {
     agentDir: profile.path,
   }))
   // Default-profile model becomes the operations defaultModel suggestion
-  const defaultModel = profiles.find((p) => p.name === 'default')?.model || ''
+  const defaultModel =
+    profiles.find((p) => p.name === 'default')?.model || DEFAULT_AGENT_MODEL_ID
   return {
     ok: true,
     parsed: {
@@ -357,20 +361,28 @@ function removeAgentMeta(agentId: string) {
 
 function loadSettings(): OperationsSettings {
   if (typeof window === 'undefined') {
-    return { defaultModel: '', autoApprove: false, activityFeedLength: 5 }
+    return {
+      defaultModel: DEFAULT_AGENT_MODEL_ID,
+      autoApprove: false,
+      activityFeedLength: 5,
+    }
   }
 
   try {
     const raw = window.localStorage.getItem(SETTINGS_STORAGE_KEY)
     if (!raw) {
-      return { defaultModel: '', autoApprove: false, activityFeedLength: 5 }
+      return {
+        defaultModel: DEFAULT_AGENT_MODEL_ID,
+        autoApprove: false,
+        activityFeedLength: 5,
+      }
     }
 
     const parsed = JSON.parse(raw) as Partial<OperationsSettings>
     const activityFeedLength = Number(parsed.activityFeedLength)
 
     return {
-      defaultModel: readString(parsed.defaultModel),
+      defaultModel: readString(parsed.defaultModel) || DEFAULT_AGENT_MODEL_ID,
       autoApprove: Boolean(parsed.autoApprove),
       activityFeedLength:
         Number.isFinite(activityFeedLength) && activityFeedLength > 0
@@ -378,13 +390,30 @@ function loadSettings(): OperationsSettings {
           : 5,
     }
   } catch {
-    return { defaultModel: '', autoApprove: false, activityFeedLength: 5 }
+    return {
+      defaultModel: DEFAULT_AGENT_MODEL_ID,
+      autoApprove: false,
+      activityFeedLength: 5,
+    }
   }
 }
 
 function persistSettings(settings: OperationsSettings) {
   if (typeof window === 'undefined') return
   window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings))
+}
+
+function splitProviderModel(modelId: string): {
+  model: string
+  provider: string | undefined
+} {
+  const trimmed = modelId.trim() || DEFAULT_AGENT_MODEL_ID
+  const slashIndex = trimmed.indexOf('/')
+  if (slashIndex <= 0) return { model: trimmed, provider: undefined }
+  return {
+    provider: trimmed.slice(0, slashIndex),
+    model: trimmed.slice(slashIndex + 1),
+  }
 }
 
 
@@ -622,9 +651,11 @@ export function useOperations() {
         throw new Error('A profile with this name already exists')
       }
 
+      const resolvedModel = splitProviderModel(input.model)
       await createClaudeProfile({
         name: id,
-        model: input.model.trim() || undefined,
+        model: resolvedModel.model,
+        provider: resolvedModel.provider ?? DEFAULT_AGENT_PROVIDER,
       })
       // Persist system prompt + description into the profile config so they
       // survive across browsers; localStorage meta keeps emoji/color preferences.
