@@ -338,6 +338,8 @@ export function ProviderWizard({
       : verifyState === 'warning'
         ? 'Connected (models pending)'
         : 'Checking connection…'
+  const isCodexCliAuth =
+    selectedProvider?.id === 'openai-codex'
 
   return (
     <DialogRoot open={open} onOpenChange={handleDialogOpenChange}>
@@ -551,18 +553,23 @@ export function ProviderWizard({
             {step === 'instructions' && selectedProvider && selectedAuthType ? (
               <section className="mt-5">
                 <h3 className="text-base font-medium text-primary-900 text-balance">
-                  Step 3: Add API Key
+                  Step 3:{' '}
+                  {selectedAuthType === 'api-key'
+                    ? 'Add API Key'
+                    : 'Authenticate Provider'}
                 </h3>
 
                 {selectedAuthType === 'oauth' ? (
                   <>
                     <p className="mt-1 text-sm text-primary-600 text-pretty">
-                      This will run{' '}
+                      This uses{' '}
                       <code className="font-mono text-primary-800">
-                        hermes setup
+                        {isCodexCliAuth ? 'codex' : 'hermes setup'}
                       </code>{' '}
-                      in the terminal to start the OAuth flow. A browser window
-                      will open for you to sign in with Google.
+                      in the terminal to start the OAuth flow.
+                      {isCodexCliAuth
+                        ? ' Hermes Agent will use the Codex CLI credentials for LLM requests.'
+                        : ' A browser window will open for you to sign in.'}
                     </p>
 
                     <div className="mt-4 flex flex-col gap-3">
@@ -571,8 +578,9 @@ export function ProviderWizard({
                         onClick={function onLaunchOAuth() {
                           window.open('/terminal', '_blank')
                           setVerificationMessage(
-                            'Run "hermes setup" in the terminal and select Google OAuth when prompted. ' +
-                              'A browser window will open for sign-in. Once complete, Hermes Agent will restart automatically.',
+                            isCodexCliAuth
+                              ? 'Run "codex" in the terminal and complete the browser sign-in. Hermes Agent will use ~/.codex/auth.json for OpenAI Codex LLM requests.'
+                              : 'Run "hermes setup" in the terminal and select OAuth when prompted. A browser window will open for sign-in. Once complete, Hermes Agent will restart automatically.',
                           )
                           setVerifyState('warning')
                           setStep('verify')
@@ -586,12 +594,24 @@ export function ProviderWizard({
                           In the terminal, run:
                         </p>
                         <pre className="mt-1 rounded-lg bg-primary-200/60 px-2 py-1.5 text-xs font-mono text-primary-900">
-                          hermes setup
+                          {isCodexCliAuth ? 'codex' : 'hermes setup'}
                         </pre>
                         <p className="mt-1.5 text-xs text-primary-600 text-pretty">
-                          Select <strong>Google Antigravity</strong> →{' '}
-                          <strong>OAuth</strong>. A browser tab will open for
-                          Google sign-in.
+                          {isCodexCliAuth ? (
+                            <>
+                              Complete the Codex CLI browser sign-in. Hermes
+                              Agent reads the resulting{' '}
+                              <code className="font-mono">
+                                ~/.codex/auth.json
+                              </code>{' '}
+                              token for OpenAI Codex.
+                            </>
+                          ) : (
+                            <>
+                              Select <strong>OAuth</strong>. A browser tab will
+                              open for sign-in.
+                            </>
+                          )}
                         </p>
                       </div>
 
@@ -614,9 +634,9 @@ export function ProviderWizard({
                 ) : selectedAuthType === 'cli-token' ? (
                   <>
                     <p className="mt-1 text-sm text-primary-600 text-pretty">
-                      If you have Claude Code or the Hermes CLI installed,
-                      Hermes Agent can use the same auth token. Run the configure
-                      command to detect and import it automatically.
+                      {isCodexCliAuth
+                        ? 'Hermes Agent can use your Codex CLI auth token for OpenAI Codex LLM requests. Run the Codex CLI once to authenticate.'
+                        : 'If you have Claude Code or the Hermes CLI installed, Hermes Agent can use the same auth token. Run the configure command to detect and import it automatically.'}
                     </p>
 
                     <div className="mt-4 flex flex-col gap-3">
@@ -625,8 +645,9 @@ export function ProviderWizard({
                         onClick={function onLaunchCLI() {
                           window.open('/terminal', '_blank')
                           setVerificationMessage(
-                            'Run "hermes setup" in the terminal and select Anthropic → CLI Token. ' +
-                              'It will detect compatible local credentials and import them automatically.',
+                            isCodexCliAuth
+                              ? 'Run "codex" in the terminal and complete the browser sign-in. Hermes Agent will use ~/.codex/auth.json for OpenAI Codex LLM requests.'
+                              : 'Run "hermes setup" in the terminal and select Anthropic → CLI Token. It will detect compatible local credentials and import them automatically.',
                           )
                           setVerifyState('warning')
                           setStep('verify')
@@ -640,22 +661,47 @@ export function ProviderWizard({
                           In the terminal, run:
                         </p>
                         <pre className="mt-1 rounded-lg bg-primary-200/60 px-2 py-1.5 text-xs font-mono text-primary-900">
-                          hermes setup
+                          {isCodexCliAuth ? 'codex' : 'hermes setup'}
                         </pre>
                         <p className="mt-1.5 text-xs text-primary-600 text-pretty">
-                          Select <strong>Anthropic</strong> →{' '}
-                          <strong>Setup Token (Hermes CLI)</strong>. It will
-                          detect your existing Claude credentials from{' '}
-                          <code className="font-mono">~/.hermes/</code>.
+                          {isCodexCliAuth ? (
+                            <>
+                              Complete the Codex CLI browser sign-in. Hermes
+                              Agent reads the resulting{' '}
+                              <code className="font-mono">
+                                ~/.codex/auth.json
+                              </code>{' '}
+                              token for OpenAI Codex.
+                            </>
+                          ) : (
+                            <>
+                              Select <strong>Anthropic</strong> →{' '}
+                              <strong>Setup Token (Hermes CLI)</strong>. It will
+                              detect your existing Claude credentials from{' '}
+                              <code className="font-mono">~/.hermes/</code>.
+                            </>
+                          )}
                         </p>
                       </div>
 
                       <div className="rounded-xl border border-amber-200 bg-amber-50/70 px-3 py-2">
                         <p className="text-xs text-amber-800 text-pretty">
-                          <strong>Requires:</strong> Claude Code or Hermes CLI
-                          must be installed and authenticated first. Run{' '}
-                          <code className="font-mono">hermes</code> in terminal
-                          to verify.
+                          <strong>Requires:</strong>{' '}
+                          {isCodexCliAuth ? (
+                            <>
+                              Codex CLI must be installed and authenticated
+                              first. Run{' '}
+                              <code className="font-mono">codex</code> in
+                              terminal to verify.
+                            </>
+                          ) : (
+                            <>
+                              Claude Code or Hermes CLI must be installed and
+                              authenticated first. Run{' '}
+                              <code className="font-mono">hermes</code> in
+                              terminal to verify.
+                            </>
+                          )}
                         </p>
                       </div>
 
@@ -663,12 +709,18 @@ export function ProviderWizard({
                         <p className="text-xs text-primary-700 text-pretty">
                           No terminal access?{' '}
                           <a
-                            href="https://github.com/NousResearch/hermes-agent"
+                            href={
+                              isCodexCliAuth
+                                ? selectedProvider.docsUrl
+                                : 'https://github.com/NousResearch/hermes-agent'
+                            }
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-primary-800 underline decoration-primary-400 hover:text-primary-900"
                           >
-                            See the Hermes Agent docs
+                            {isCodexCliAuth
+                              ? 'See the Codex CLI docs'
+                              : 'See the Hermes Agent docs'}
                           </a>{' '}
                           for CLI token setup instructions.
                         </p>

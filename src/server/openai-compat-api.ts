@@ -22,6 +22,10 @@ let _cachedDefaultModel: string | null = null
 
 async function getDefaultModel(): Promise<string> {
   if (_cachedDefaultModel) return _cachedDefaultModel
+  if (process.env.HERMES_DEFAULT_MODEL) {
+    _cachedDefaultModel = process.env.HERMES_DEFAULT_MODEL
+    return _cachedDefaultModel
+  }
   if (process.env.CLAUDE_DEFAULT_MODEL) {
     _cachedDefaultModel = process.env.CLAUDE_DEFAULT_MODEL
     return _cachedDefaultModel
@@ -38,9 +42,7 @@ async function getDefaultModel(): Promise<string> {
       const data = (await res.json()) as { data?: Array<{ id: string }> }
       if (data.data && data.data.length > 0) {
         // Prefer a known-good chat model over the first alphabetical one
-        const preferred = data.data.find((m) =>
-          /qwen|llama|mistral|gemma/i.test(m.id),
-        )
+        const preferred = data.data.find((m) => /gpt-5\.5/i.test(m.id))
         _cachedDefaultModel = preferred?.id ?? data.data[0].id
         return _cachedDefaultModel
       }
@@ -48,7 +50,7 @@ async function getDefaultModel(): Promise<string> {
   } catch {
     /* ignore */
   }
-  return 'default'
+  return 'gpt-5.5'
 }
 
 export type OpenAICompatContentPart =

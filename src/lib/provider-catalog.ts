@@ -55,6 +55,23 @@ export const PROVIDER_CATALOG: Array<ProviderInfo> = [
     ),
   },
   {
+    id: 'openai-codex',
+    name: 'OpenAI Codex',
+    description: 'GPT coding models authenticated through the Codex CLI.',
+    authTypes: ['cli-token'],
+    docsUrl: 'https://github.com/openai/codex',
+    configExample: JSON.stringify(
+      {
+        model: {
+          provider: 'openai-codex',
+          default: 'gpt-5.5',
+        },
+      },
+      null,
+      2,
+    ),
+  },
+  {
     id: 'google',
     name: 'Google',
     description: 'Gemini models with API key or OAuth.',
@@ -202,6 +219,10 @@ export function buildConfigExample(
     authType === 'local' ? `${provider.id}:local` : `${provider.id}:default`
 
   if (authType === 'oauth') {
+    if (provider.id === 'openai-codex') {
+      return provider.configExample
+    }
+
     return JSON.stringify(
       {
         auth: {

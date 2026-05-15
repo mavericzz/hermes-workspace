@@ -73,7 +73,7 @@ export function fallbackRoster(ids: Array<string> = []): SwarmRoster {
       name: id.replace(/^swarm/i, 'Swarm'),
       role: defaultRoleFromId(id),
       specialty: '',
-      model: 'Worker',
+      model: 'GPT-5.5',
       mission: 'Awaiting orchestrator dispatch.',
       skills: [],
     })),

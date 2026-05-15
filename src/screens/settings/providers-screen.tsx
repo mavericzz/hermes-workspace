@@ -276,7 +276,7 @@ const SETTINGS: Array<SettingDefinition> = [
       'Ordered fallback models. Use one per line or separate with commas.',
     kind: 'multiline',
     rows: 3,
-    placeholder: 'anthropic-oauth/claude-sonnet-4-6',
+    placeholder: 'openai-codex/gpt-5.5',
     formatter: formatStringList,
     parser: parseStringList,
   },
@@ -767,7 +767,12 @@ function SettingCard(props: {
   )
 }
 
-type ModelProviderOption = 'custom' | 'openrouter' | 'anthropic' | 'openai'
+type ModelProviderOption =
+  | 'custom'
+  | 'openrouter'
+  | 'anthropic'
+  | 'openai'
+  | 'openai-codex'
 
 type ModelConfigDraft = {
   provider: ModelProviderOption
@@ -785,6 +790,7 @@ const MODEL_PROVIDER_OPTIONS: Array<SelectOption> = [
   { label: 'OpenRouter', value: 'openrouter' },
   { label: 'Anthropic', value: 'anthropic' },
   { label: 'OpenAI', value: 'openai' },
+  { label: 'OpenAI Codex', value: 'openai-codex' },
 ]
 
 const MODEL_PRESETS = [
@@ -832,10 +838,13 @@ function readPrimaryModelConfig(
 ): ModelConfigDraft {
   const modelBlock = readRecord(config?.model)
   const flatModel = typeof config?.model === 'string' ? config.model : ''
+  const model = coerceString(modelBlock?.default ?? flatModel)
 
   return {
-    provider: parseModelProvider(modelBlock?.provider ?? config?.provider),
-    model: coerceString(modelBlock?.default ?? flatModel),
+    provider: model
+      ? parseModelProvider(modelBlock?.provider ?? config?.provider)
+      : 'openai-codex',
+    model: model || 'gpt-5.5',
     baseUrl: coerceString(modelBlock?.base_url ?? config?.base_url),
   }
 }
@@ -1008,8 +1017,8 @@ function ActiveModelCard({
 }) {
   const queryClient = useQueryClient()
   const [primaryConfig, setPrimaryConfig] = useState<ModelConfigDraft>({
-    provider: 'custom',
-    model: '',
+    provider: 'openai-codex',
+    model: 'gpt-5.5',
     baseUrl: '',
   })
   const [fallbackConfig, setFallbackConfig] = useState<ModelConfigDraft>({

@@ -19,6 +19,7 @@ type AuthResult = Response | true
 const CLAUDE_HOME = process.env.HERMES_HOME ?? process.env.CLAUDE_HOME ?? path.join(os.homedir(), '.hermes')
 const CONFIG_PATH = path.join(CLAUDE_HOME, 'config.yaml')
 const ENV_PATH = path.join(CLAUDE_HOME, '.env')
+const CODEX_AUTH_PATH = path.join(os.homedir(), '.codex', 'auth.json')
 
 // Known Hermes providers
 const PROVIDERS = [
@@ -161,6 +162,36 @@ function checkAuthStore(providerId: string): {
   return { hasToken: false, source: '' }
 }
 
+function checkCodexCliAuth(): {
+  hasToken: boolean
+  source: string
+  maskedKey?: string
+} {
+  try {
+    if (!fs.existsSync(CODEX_AUTH_PATH)) return { hasToken: false, source: '' }
+    const store = JSON.parse(fs.readFileSync(CODEX_AUTH_PATH, 'utf-8')) as {
+      tokens?: { access_token?: unknown; refresh_token?: unknown }
+      OPENAI_API_KEY?: unknown
+    }
+    const token =
+      typeof store.tokens?.access_token === 'string'
+        ? store.tokens.access_token
+        : typeof store.tokens?.refresh_token === 'string'
+          ? store.tokens.refresh_token
+          : typeof store.OPENAI_API_KEY === 'string'
+            ? store.OPENAI_API_KEY
+            : ''
+    if (!token.trim()) return { hasToken: false, source: '' }
+    return {
+      hasToken: true,
+      source: 'codex-cli',
+      maskedKey: maskKey(token),
+    }
+  } catch {
+    return { hasToken: false, source: '' }
+  }
+}
+
 export const Route = createFileRoute('/api/claude-config')({
   server: {
     handlers: {
@@ -185,8 +216,9 @@ export const Route = createFileRoute('/api/claude-config')({
         // Build provider status
         const providerStatus = PROVIDERS.map((p) => {
           const hasEnvKey =
-            p.envKeys.length === 0 || p.envKeys.some((k) => !!env[k])
-          const authStoreCheck = checkAuthStore(p.id)
+            p.envKeys.length > 0 && p.envKeys.some((k) => !!env[k])
+          const authStoreCheck =
+            p.id === 'openai-codex' ? checkCodexCliAuth() : checkAuthStore(p.id)
           const hasKey =
             hasEnvKey || authStoreCheck.hasToken || p.authType === 'none'
           const maskedKeys: Record<string, string> = {}

@@ -4,7 +4,7 @@ workers:
     name: Reviewer
     role: Reviewer / Merge Gate
     specialty: code review, regression detection, test coverage, merge readiness
-    model: Opus 4.7
+    model: GPT-5.5
     mission: Catch breakage before it reaches Eric. Be the final quality gate.
     skills:
       - swarm-pr-worker
@@ -118,7 +118,7 @@ workers:
     name: Foundation
     role: Backend Foundation / Runtime Contracts
     specialty: ClaudeSwarm runtime contracts, API design, plugin foundations, state
-    model: GPT-5.4
+    model: GPT-5.5
     mission: Build the backend substrate that keeps swarm state, dispatch, sessions, and plugins coherent.
     skills:
       - swarm-dev-runtime
@@ -139,7 +139,7 @@ workers:
     name: Mirror
     role: Swarm Control Plane / Main-Session Mirror
     specialty: control-plane state, card parity, main-agent continuity
-    model: GPT-5.4
+    model: GPT-5.5
     mission: Keep the swarm control plane operationally useful and visually canonical.
     skills:
       - swarm-orchestrator
@@ -158,7 +158,7 @@ workers:
     name: Watch
     role: Ops / Health / Lifecycle
     specialty: gateway health, cron, runtime/process status, lifecycle sweeps
-    model: GPT-5.4
+    model: GPT-5.5
     mission: Keep the local swarm/gateway environment stable and observable.
     skills:
       - swarm-dev-runtime
@@ -223,7 +223,7 @@ workers:
     name: QA
     role: Secondary QA / Reviewer Support
     specialty: secondary review, smoke verification, expected-vs-actual checks
-    model: GPT-5.4
+    model: GPT-5.5
     mission: Review parallel outputs and protect quality gates.
     skills:
       - swarm-pr-worker
